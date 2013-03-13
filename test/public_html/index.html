@@ -1,0 +1,48 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ClassChat</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" type="text/css" href="main.css"/>
+    <script src="common.js"></script>
+  </head>
+  <body>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+    <script src="./client.js"></script>
+    <!-- include Google's AJAX API loader -->
+    <script src="http://www.google.com/jsapi"></script>
+    <!-- load JQuery and UI from Google (need to use UI to animate colors) -->
+    <script type="text/javascript">
+    google.load("jqueryui", "1.5.2");
+    </script>
+    
+    <div id="roomList" style="">
+      <div class="title">Rooms</div>
+      <div id="addRooms"><a href="javascript:void(0);" onclick="addRoom();">Add Room</a></div>
+      <hr />
+      <div id="rooms"></div>
+    </div>
+
+    <div id="currentRoom" style="">
+      <div id="roomName" class="title">Current Room</div>
+      <div id="moderators"></div>
+      <div id="modOptions">
+        <button id="toggleLights" onclick="toggleLights(0);">Toggle Lights!</button>
+        YouTube: <input id="videoid" type="text" onkeyup="updateVideoId();" placeholder="YouTube link" />
+      </div>
+      <hr />
+      <div id="screen"></div>
+      <hr />
+      <ul id="conversation"></ul>
+      <input id="chatMsg" style="" />
+      <input type="button" id="sendMsg" value="send" />
+    </div>
+
+  </body>
+</html>
