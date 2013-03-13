@@ -29,6 +29,13 @@ var rooms = [
 ];
 
 io.sockets.on('connection', function(socket) {
+  
+  if (socket.sid === undefined || socket.sid === null) {
+        socket.sid = socket.handshake.sessionID;
+  }
+
+  socket.emit('connected', { status: 'ok' });
+  
   // when the user disconnects.. perform this
   socket.on('disconnect', function() {
     // remove the username from global usernames list
