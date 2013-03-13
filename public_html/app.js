@@ -74,9 +74,15 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('add room', function(newroom) {
     var id = (rId);
-    rooms.push({id: id, name: newroom.name, screen: { videoid: null }, chat: [], moderators: [socket.username] });
-    socket.emit('update rooms list', rooms, newroom);
+    // Verify id is unique
+    while ( getObjects(rooms, 'id', id).length > 0 )
+      id++;
+    rId = id; // Update the rId for later use.
+    newroom = { id: id, name: newroom.name, screen: { videoid: null }, chat: [], moderators: [socket.username] };
+    rooms.push(newroom);
     socket.broadcast.emit('update rooms list', rooms, undefined);
+    socket.emit('update rooms list', rooms, newroom);
+    socket.emit('update room', newroom);
   });
 
 

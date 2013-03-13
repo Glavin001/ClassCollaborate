@@ -4,7 +4,7 @@
  */
 
 
-var socket = io.connect(undefined,{ 'port': 8080, 'connect timeout': 500} );
+var socket = io.connect(undefined,{ 'port': 8080, 'connect timeout': 100} );
 var userMe = { username: undefined, room: {} };
 
 // on connection to server, ask for user's name with an anonymous callback
