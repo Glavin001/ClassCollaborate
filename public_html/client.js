@@ -4,7 +4,7 @@
  */
 
 
-var socket = io.connect(undefined,{ 'port': 8080, 'connect timeout': 100} );
+var socket = io.connect(undefined,{ 'port': 8080, 'connect timeout': 500} );
 var userMe = { username: undefined, room: {} };
 
 // on connection to server, ask for user's name with an anonymous callback
@@ -124,7 +124,8 @@ function addRoom() {
   //var youtubeLink = prompt("YouTube URL. Leave blank for none.");
   //var youtubeVideoId = (youtubeLink != "")?youtubeId(youtubeLink):null;
   // socket.emit('add room', { name: roomName, videoid: youtubeVideoId } );
-  socket.emit('add room', { name: roomName } );
+  if (roomName) // Check if roomName is valid
+    socket.emit('add room', { name: roomName } );
 }
 
 function editRoom(roomid, options) {
