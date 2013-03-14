@@ -4,13 +4,14 @@
  */
 
 
-var socket = io.connect(undefined,{ 'port': 8080, 'connect timeout': 10000} );
-var userMe = { username: undefined, room: {} };
+var socket = io.connect(undefined,{ 'port': 8080, 'connect timeout': 1000} );
+var userMe = { id: undefined, username: undefined, room: {} };
 
 // on connection to server, ask for user's name with an anonymous callback
 socket.on('connect', function() {
   console.log("connect");
   // call the server-side function 'add user' and send one parameter (value of prompt)
+  userMe.id = socket.socket.sessionid; // FIX ME
   userMe.username = prompt("What's your name?");
   socket.emit('add user', userMe.username);
 });
@@ -24,7 +25,7 @@ socket.on('update room', function(data) {
   $('#roomName').html(data.name);
   // Update the moderators list
   $("#moderators").html("Moderator(s): "+data.moderators.join(", "));
-  if ( $.inArray(userMe.username, data.moderators) != -1)
+  if ( $.inArray(userMe.id, data.moderators) != -1)
   {
     var roomName = $("#roomName");
     roomName.attr("contenteditable", "true");

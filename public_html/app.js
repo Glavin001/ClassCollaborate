@@ -18,14 +18,16 @@ app.get('/', function(req, res) {
 });
 
 // usernames which are currently connected to the chat
-var usernames = {};
+var users = {
+//  id: { name: "Glavin", socket: socket }
+};
 var rId = 0; // Stores the room id that increments for every new room added.
 
 // rooms which are currently available in chat
 var rooms = [
-  {id: 0, name: 'Lobby', password: "", screen: { videoid: ""}, chat: [], moderators: ["Glavin"]},
-  {id: 1, name: 'CSCI 4477 - Data Mining', password: "", screen: { videoid: 'fES1tRiuqbU'}, chat: [], moderators: ["Pawan Lingras"]},
-  {id: 2, name: 'Test', password: "", screen: { videoid: null}, chat: [], moderators: ["Glavin"]}
+  {id: 0, name: 'Lobby', password: "", screen: { videoid: ""}, chat: [], moderators: [0]},
+  {id: 1, name: 'CSCI 4477 - Data Mining', password: "", screen: { videoid: 'fES1tRiuqbU'}, chat: [], moderators: [0]},
+  {id: 2, name: 'Test', password: "", screen: { videoid: null}, chat: [], moderators: [0]}
 ];
 
 io.sockets.on('connection', function(socket) {
@@ -39,9 +41,9 @@ io.sockets.on('connection', function(socket) {
   // when the user disconnects.. perform this
   socket.on('disconnect', function() {
     // remove the username from global usernames list
-    delete usernames[socket.username];
+    delete users[socket.id];
     // update list of users in chat, client-side
-    io.sockets.emit('update users', usernames);
+    io.sockets.emit('update users', users);
     // echo globally that this client has left
     // socket.broadcast.emit('update chat', 'SERVER', socket.username + ' has disconnected');
     socket.leave(socket.room);
@@ -52,12 +54,16 @@ io.sockets.on('connection', function(socket) {
 
   // when the client emits 'adduser', this listens and executes
   socket.on('add user', function(username) {
+    var id = socket.id;
+    var newUser = { id: id, name: username, socket: socket };
+    
     // store the username in the socket session for this client
-    socket.username = username;
+    socket.username = newUser.id;
     // store the room name in the socket session for this client
-    socket.room = rooms[0];
+    if (rooms.length > 0)
+      socket.room = rooms[0];
     // add the client's username to the global list
-    usernames[username] = username;
+    users[socket.username] = newUser;
     // send client to current room
     socket.join(socket.room);
     // update the client side display of current room
@@ -67,7 +73,9 @@ io.sockets.on('connection', function(socket) {
     // echo to room 1 that a person has connected to their room
     //socket.broadcast.to(socket.room).emit('update chat', 'SERVER', username + ' has connected to this room');
     socket.emit('update rooms list', rooms, socket.room);
-
+    
+    console.log(users);
+    
   });
 
 // ====== Rooms
@@ -78,7 +86,7 @@ io.sockets.on('connection', function(socket) {
     while ( getObjects(rooms, 'id', id).length > 0 )
       id++;
     rId = id; // Update the rId for later use.
-    newroom = { id: id, name: newroom.name, screen: { videoid: null }, chat: [], moderators: [socket.username] };
+    newroom = { id: id, name: newroom.name, screen: { videoid: null }, chat: [], moderators: [ (socket.username).toString() ] };
     rooms.push(newroom);
     socket.broadcast.emit('update rooms list', rooms, undefined);
     socket.emit('update rooms list', rooms, newroom);
@@ -87,7 +95,7 @@ io.sockets.on('connection', function(socket) {
 
 
   socket.on('remove room', function(roomid) {
-    var index = getRoomIndex(roomid);
+    var index = getIndexFromId(roomid);
     rooms.remove(index);
     socket.emit('update rooms list', rooms, socket.room);
     socket.broadcast.emit('update rooms list', rooms, undefined);
@@ -95,12 +103,13 @@ io.sockets.on('connection', function(socket) {
   
   socket.on('edit room', function(roomid, options) {
     console.log("edit room", roomid, options);
-    var index = getRoomIndex(rooms, roomid);
+    var index = getIndexFromId(rooms, roomid);
     console.log("index", index);
     var forceRefresh = false;
     if (index >= 0)
     {
-      if ($.inArray(socket.username, rooms[index].moderators) != -1)
+      console.log((socket.username).toString(), rooms[index]);
+      if ($.inArray( (socket.username).toString(), rooms[index].moderators) != -1)
       {
         if (options.name != undefined)
         {
@@ -115,6 +124,8 @@ io.sockets.on('connection', function(socket) {
         {
           rooms[index].moderator.push(options.addModerator);
         }
+        
+        socket.room = rooms[index];
         socket.emit('update rooms list', rooms, socket.room); // Send update back to same socket user
         socket.broadcast.emit('update rooms list', rooms, undefined);
         if (forceRefresh)
@@ -138,13 +149,13 @@ io.sockets.on('connection', function(socket) {
     // leave the current room (stored in session)
     socket.leave(socket.room);
     // join new room, received as function parameter
-    socket.join(newroom);
+    socket.join(newroomid);
     //socket.emit('update chat', 'SERVER', 'You have connected to ' + newroom.name);
     // sent message to OLD room
     //socket.broadcast.to(socket.room).emit('update chat', 'SERVER', socket.username + ' has left this room');
     // update socket session room title
-    socket.room = newroom;
-    socket.emit('update room', socket.room);
+    socket.room = newroomid;
+    socket.emit('update room', getRoom(parseInt(socket.room)));
     //socket.broadcast.to(newroom).emit('update chat', 'SERVER', socket.username + ' has joined this room');
     socket.emit('update rooms list', rooms, newroom);
     // update the client side display of current room
@@ -152,13 +163,14 @@ io.sockets.on('connection', function(socket) {
 
   // when the client emits 'send chat', this listens and executes
   socket.on('send chat', function(data) {
+    console.log("send chat",data, socket.room);
     // we tell the client to execute 'updatechat' with 2 parameters
-    io.sockets.in(socket.room).emit('update chat', socket.username, data, socket.room);
+    io.sockets.in(socket.room).emit('update chat', users[socket.username].name, data, socket.room);
     // Add message to room chat log
-    var roomIndex = getRoomIndex(rooms, socket.room.id);
+    var roomIndex = getIndexFromId(rooms, socket.room);
     if ( roomIndex >= 0 )
       rooms[roomIndex].chat.push({username: socket.username, msg: data});
-  });
+   });
 
 
   // Custom Helper Functions
@@ -166,16 +178,16 @@ io.sockets.on('connection', function(socket) {
     return getObjects(rooms, 'id', roomId)[0];
   }
 
-  function getRoomIndex(allRooms, id) {
+  function getIndexFromId(array, id) {
     var i;
-    for (i = 0; i < allRooms.length; i++)
+    for (i = 0; i < array.length; i++)
     {
-      if (allRooms[i].id == id)
+      if (array[i].id == id)
       {
-        return i; // Found room!
+        return i; // Found!
       }
     }
-    return -1; // Did not find room
+    return -1; // Did not find
   }
 
   // Array Remove - By John Resig (MIT Licensed)
