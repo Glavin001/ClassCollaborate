@@ -333,7 +333,7 @@ function resizePage() {
   if ( roomList.hasClass("open") ) // Check if opened
     rLW = (rLW > 200)?(200):(rLW < 120)?(120):rLW;
   else
-    rLW = 0;
+    rLW = 1;
   // Current Room
   var cRH = wHeight;
   var cRW = wWidth 
