@@ -4,7 +4,7 @@
  */
 
 
-var socket = io.connect(undefined,{ 'port': 8080, 'connect timeout': 500} );
+var socket = io.connect(undefined,{ 'port': 8080, 'connect timeout': 10000} );
 var userMe = { username: undefined, room: {} };
 
 // on connection to server, ask for user's name with an anonymous callback
@@ -338,11 +338,11 @@ function resizePage() {
   var cRH = wHeight;
   var cRW = wWidth 
           - rLW 
-          - toggleRoomList.width() 
+          - toggleRoomList.width();
+  // Screen / Video Player
+  var sW = cRW
           - parseInt( currRoom.css('padding-left'))
           - parseInt( currRoom.css('padding-right'));
-  // Screen / Video Player
-  var sW = cRW;
   var sH = ( cRH
           - $('#roomName').height() 
           - $('#moderators').height() 
@@ -366,7 +366,9 @@ function resizePage() {
   var cBH = cRH           
           - $('#roomName').height() 
           - $('#moderators').height() 
-          - $('#modOptions').height()
+          - $('#modOptions').height() 
+          - $('#chatMsg').height() 
+          - $('#sendMsg').height()
           - parseInt( currRoom.css('padding-top'))
           - parseInt( currRoom.css('padding-bottom'))
           - ((screen.css('display') != 'none')?(sH):(0)
@@ -391,7 +393,8 @@ function resizePage() {
     width: cRW 
   }, 100);
   convoBox.animate({
-    height: cBH
+    height: cBH,
+    width: sW
   }, 100);
   screen.animate({ 
     height: sH, 

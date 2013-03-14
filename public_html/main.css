@@ -123,6 +123,10 @@ hr {
   border-radius: 0px 0px 5px 5px;
 }
 
+#sendMsg {
+  width: 100%;
+}
+
 #screen {
   position: relative;
   z-index: 100;
