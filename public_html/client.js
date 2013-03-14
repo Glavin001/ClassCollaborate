@@ -188,8 +188,7 @@ function toggleLights(state)
     lightsLayer.bind('click', function () { 
       toggleLights(1);
     } );
-
-    
+    toggleRoomList(1);
   }
   else
   {
@@ -198,9 +197,33 @@ function toggleLights(state)
     //$('#toggleLights').attr('onclick', "toggleLights(0);");
     lightsLayer.animate({ opacity: 0.0 },500, function () { lightsLayer.hide(); });
     lightsLayer.unbind('click');
-    
+    toggleRoomList(0);
   }
 }
+
+function toggleRoomList(state)
+{
+  var roomList = $("#roomList");
+  if (state === 0)
+  {
+    // Is Closed => Open
+    roomList.removeClass("closed").addClass("open");
+    $("#toggleRoomList").unbind('click');
+    $("#toggleRoomList").bind('click', function() {
+      toggleRoomList(1);
+    });  }
+  else
+  {
+    // Is Open => Close
+    roomList.removeClass("open").addClass("closed");
+    $("#toggleRoomList").unbind('click');
+    $("#toggleRoomList").bind('click', function() {
+      toggleRoomList(0);
+    });
+  }
+  resizePage();
+}
+
 
 function updateVideoId()
 {
@@ -238,6 +261,10 @@ $(function() {
       $('#sendMsg').focus().click();
       $('#chatMsg').focus();
     }
+  });
+  
+  $("#toggleRoomList").bind('click', function() {
+   toggleRoomList(1); 
   });
   
   resizePage();   
@@ -286,6 +313,7 @@ function resizePage() {
   console.log("Resizing Page")
   // Working variables
   var roomList = $("#roomList");
+  var toggleRoomList = $("#toggleRoomList");
   var currRoom = $("#currentRoom");
   var convoBox = $("#conversation");
   var screen = $("#screen");
@@ -300,19 +328,28 @@ function resizePage() {
           - parseInt( $("body").css('padding-top'))
           - parseInt( $("body").css('padding-bottom'));
   // Room List
-  var rLH = wHeight * 0.8;
+  var rLH = wHeight * 1.0;
   var rLW = wWidth * 0.2;
-  rLW = (rLW > 200)?(200):(rLW < 120)?(120):rLW;
+  if ( roomList.hasClass("open") ) // Check if opened
+    rLW = (rLW > 200)?(200):(rLW < 120)?(120):rLW;
+  else
+    rLW = 0;
   // Current Room
-  var cRH = ( wHeight 
-          - $('#roomName').height() 
-          - $('#moderators').height() 
-          - $('#modOptions').height()
-  ) * 0.8;
-  var cRW = wWidth - rLW;
+  var cRH = wHeight;
+  var cRW = wWidth 
+          - rLW 
+          - toggleRoomList.width() 
+          - parseInt( currRoom.css('padding-left'))
+          - parseInt( currRoom.css('padding-right'));
   // Screen / Video Player
   var sW = cRW;
-  var sH = cRH*0.7;
+  var sH = ( cRH
+          - $('#roomName').height() 
+          - $('#moderators').height() 
+          - $('#modOptions').height()           
+          - parseInt( currRoom.css('padding-top'))
+          - parseInt( currRoom.css('padding-bottom')) )
+          * 0.7;
   var sPT = 0;
   var sPR = 0;
   var sPB = 0;
@@ -326,12 +363,18 @@ function resizePage() {
   sW = sW - sPL - sPR;
   */
   // Conversation log box
-  var cBH = cRH 
-          - ((screen.css('display') != 'none')?(sH):(0)  
+  var cBH = cRH           
+          - $('#roomName').height() 
+          - $('#moderators').height() 
+          - $('#modOptions').height()
+          - parseInt( currRoom.css('padding-top'))
+          - parseInt( currRoom.css('padding-bottom'))
+          - ((screen.css('display') != 'none')?(sH):(0)
           );
   
   // Stop previous animations
   roomList.stop();
+  toggleRoomList.stop();
   currRoom.stop();
   convoBox.stop();
   screen.stop();
@@ -339,6 +382,9 @@ function resizePage() {
   roomList.animate({ 
     height: rLH, 
     width: rLW
+  }, 100);
+  toggleRoomList.animate({ 
+    height: rLH, 
   }, 100);
   currRoom.animate({ 
     height: cRH, 

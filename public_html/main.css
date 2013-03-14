@@ -34,12 +34,24 @@ hr {
 }
 
 #roomList {
-  display: table-cell;
+/*  display: table-cell; */
+  display: block;
+  float: left;
+  
   width: 150px;
   border-right: 1px solid black;
   height: 480px;
-  overflow: hidden;
-  
+  overflow-x: scroll;
+  min-width: 0px;
+}
+
+#toggleRoomList {
+    background: black;
+    float: left;
+    width: 10px;
+    height: 480px;
+    margin: 0;
+    padding: 0;
 }
 
 #addRooms, #roomList .title {
@@ -70,10 +82,13 @@ hr {
 }
 
 #currentRoom {
-  display: table-cell;
+/*  display: table-cell; */
+  display: block;
+  float: left;
+
   height: 480px;
   width: 400px;
-  overflow-y: scroll;
+  overflow: scroll !important;
   padding: 10px;
 }
 

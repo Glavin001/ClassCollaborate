@@ -24,12 +24,14 @@ Creation Date: March 12, 2013
     
     <div id="lightsLayer" style="display:none; opacity: 0.0;"></div>
     
-    <div id="roomList" style="">
+    <div id="roomList" class="open" style="">
       <div class="title">Rooms</div>
       <div id="addRooms"><a href="javascript:void(0);" onclick="addRoom();">Add Room</a></div>
       <hr />
       <div id="rooms"></div>
     </div>
+
+    <div id="toggleRoomList"></div>
 
     <div id="currentRoom" style="">
       <div id="roomName" class="title">Current Room</div>
@@ -38,9 +40,7 @@ Creation Date: March 12, 2013
         <button id="toggleLights" onclick="toggleLights(0);">Toggle Lights!</button>
         YouTube: <input id="videoid" type="text" onkeyup="updateVideoId();" placeholder="YouTube link" />
       </div>
-      <hr />
       <div id="screen"></div>
-      <hr />
       <ul id="conversation"></ul>
       <input id="chatMsg" style="" />
       <input type="button" id="sendMsg" value="send" />
