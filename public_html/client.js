@@ -177,15 +177,28 @@ function replaceURLWithHTMLLinks(text) {
 
 function toggleLights(state)
 {
+  var lightsLayer = $("#lightsLayer");
   if (state === 0)
   {
-    $('body').stop().animate({backgroundColor: "#000"}, 500);
-    $('#toggleLights').attr('onclick', "toggleLights(1);");
+    // Turn Lights Off
+    //$('body').stop().animate({backgroundColor: "#000"}, 500);
+    //$('#toggleLights').attr('onclick', "toggleLights(1);");
+    lightsLayer.show();
+    lightsLayer.animate({ opacity: 1.0 },1000, function () {  });
+    lightsLayer.bind('click', function () { 
+      toggleLights(1);
+    } );
+
+    
   }
   else
   {
-    $('body').stop().animate({backgroundColor: "#fff"}, 500);
-    $('#toggleLights').attr('onclick', "toggleLights(0);");
+    // Turn Lights On
+    //$('body').stop().animate({backgroundColor: "#fff"}, 500);
+    //$('#toggleLights').attr('onclick', "toggleLights(0);");
+    lightsLayer.animate({ opacity: 0.0 },500, function () { lightsLayer.hide(); });
+    lightsLayer.unbind('click');
+    
   }
 }
 
