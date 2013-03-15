@@ -43,7 +43,7 @@ io.sockets.on('connection', function(socket) {
     // remove the username from global usernames list
     delete users[socket.id];
     // update list of users in chat, client-side
-    console.log(users);
+    console.log("users:",users);
     io.sockets.emit('update users', users);         // FIX ME, cannot pass users object.
     // echo globally that this client has left
     // socket.broadcast.emit('update chat', 'SERVER', socket.username + ' has disconnected');
@@ -74,6 +74,16 @@ io.sockets.on('connection', function(socket) {
     // echo to room 1 that a person has connected to their room
     //socket.broadcast.to(socket.room).emit('update chat', 'SERVER', username + ' has connected to this room');
     socket.emit('update rooms list', rooms, getRoom(socket.room));
+    
+    var msg = users[socket.username].name + ' has joined this room';
+    socket.broadcast.to(socket.room).emit('update chat', 'SERVER', msg);
+    var roomIndex = getIndexFromId(rooms, parseInt(socket.room));
+    if (roomIndex >= 0)
+    {
+      rooms[roomIndex].chat.push({username: "SERVER", msg: msg});
+      io.sockets.in( (socket.room).toString() ).emit('update chat', "SERVER", msg);
+    }
+    
     
     console.log(users);
     
@@ -153,23 +163,31 @@ io.sockets.on('connection', function(socket) {
     // join new room, received as function parameter
     socket.join(newroomid);
     //socket.emit('update chat', 'SERVER', 'You have connected to ' + newroom.name);
+    
     // sent message to OLD room
-    //socket.broadcast.to(socket.room).emit('update chat', 'SERVER', socket.username + ' has left this room');
+    var msg = users[socket.username].name + ' has left this room';
+    socket.broadcast.to(socket.room).emit('update chat', 'SERVER', msg);
+    var roomIndex = getIndexFromId(rooms, parseInt(socket.room));
+    console.log("roomIndex:",roomIndex,"socket.room:",socket.room);
+    if (roomIndex >= 0)
+    {
+      rooms[roomIndex].chat.push({username: "SERVER", msg: msg});
+      io.sockets.in( (socket.room).toString() ).emit('update chat', "SERVER", msg);
+    }
+    
     // update socket session room
     socket.room = newroomid;
     // update the client side display of current room
     socket.emit('update room', getRoom(parseInt(socket.room)));
     
-    socket.broadcast.to(newroomid).emit('update chat', 'SERVER', users[socket.username].name + ' has joined this room');
-    rooms[roomIndex].chat.push({username: users[socket.username].name, msg: msg});
-    
-    var roomIndex = getIndexFromId(rooms, parseInt(socket.room));
+    msg = users[socket.username].name + ' has joined this room';
+    socket.broadcast.to(socket.room).emit('update chat', 'SERVER', msg);
+    roomIndex = getIndexFromId(rooms, parseInt(socket.room));
     console.log("roomIndex:",roomIndex,"socket.room:",socket.room);
     if (roomIndex >= 0)
     {
-      rooms[roomIndex].chat.push({username: users[socket.username].name, msg: msg});
-      console.log(rooms[roomIndex]);
-      io.sockets.in( (socket.room).toString() ).emit('update chat', users[socket.username].name, msg);
+      rooms[roomIndex].chat.push({username: "SERVER", msg: msg});
+      io.sockets.in( (socket.room).toString() ).emit('update chat', "SERVER", msg);
     }
     
     socket.emit('update rooms list', rooms, newroom);

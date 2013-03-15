@@ -47,7 +47,7 @@ socket.on('update room', function(data) {
   $('#roomName').html(data.name);
   // Update the moderators list
   $("#moderators").html("Moderator(s): " + data.moderators.join(", "));
-  if ($.inArray(userMe.id, data.moderators) != -1)
+  if ($.inArray(userMe.id, data.moderators) !== -1)
   {
     var roomName = $("#roomName");
     roomName.attr("contenteditable", "true");
@@ -72,7 +72,7 @@ socket.on('update room', function(data) {
   // Clear last video container
   $('#screen').html("").css("display", "none");
   // Check if there is a video connected to this class
-  if (data.screen.videoid != null)
+  if (data.screen.videoid !== null)
   {
     console.log("Displaying video for room " + data.name);
     // Display class YouTube video!
@@ -109,14 +109,14 @@ socket.on('update chat', function(username, msg) {
 // listener, whenever the server emits 'updaterooms', this updates the room the client is in
 socket.on('update rooms list', function(rooms, current_room) {
   console.log('update rooms', rooms, current_room);
-  if (current_room == undefined)
+  if (current_room === undefined)
     current_room = userMe.room;
   else
     userMe.room = current_room; // Update userMe
   $('#rooms').empty();
   $.each(rooms, function(key, value) {
     console.log(key, value);
-    if (value.id == current_room.id) {
+    if (value.id === current_room.id) {
       $('#rooms').append('<div class="room current">' + value.name + '</div>');
     }
     else {
@@ -134,7 +134,7 @@ socket.on('push refresh', function(selector) {
           )
   {
     // You have been selected to refresh.
-    switchRoom(userMe.room.id); // Update room. // FIX ME
+    switchRoom(userMe.room.id); // Update room.
   }
 });
 
