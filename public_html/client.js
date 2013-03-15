@@ -62,25 +62,26 @@ socket.on('update room', function(data) {
   $('#conversation').html(""); // Clear conversation
   // Fill in conversation
   $.each( data.chat, function(key, convo) {
-    console.log(convo);
+    console.log("convo:",convo);
     $('#conversation').append('<li><strong>' + convo.username + '</strong>: ' + convo.msg + '</li>');
   });
   
   resizePage();
   var convoBox = $('#conversation');
-  convoBox.scrollTop(convoBox.height());
+  convoBox.scrollTop(convoBox[0].scrollHeight);
 
 });
 
 // listener, whenever the server emits 'updatechat', this updates the chat body
-socket.on('update chat', function(username, data, room) {
-  console.log("update chat", username, data, room);
-  if (userMe.room.id == room.id)
-  {
+socket.on('update chat', function(username, msg) {
+  console.log("update chat", username, msg);
+  //if (userMe.room.id == room.id) {
     var convoBox = $('#conversation');
-    convoBox.append('<li><strong>' + username + '</strong>: ' + data + '</li>');
-    convoBox.scrollTop(convoBox.height());
-  }
+    convoBox.append('<li><strong>' + username + '</strong>: ' + msg + '</li>');
+    convoBox.scrollTop(convoBox[0].scrollHeight);
+  //} else {
+  //   console.log("Not in the correct room.");
+  //}
 });
 
 // listener, whenever the server emits 'updaterooms', this updates the room the client is in
@@ -212,7 +213,8 @@ function toggleRoomList(state)
     $("#toggleRoomList").unbind('click');
     $("#toggleRoomList").bind('click', function() {
       toggleRoomList(1);
-    });  }
+    });  
+  }
   else
   {
     // Is Open => Close
@@ -236,7 +238,7 @@ function updateVideoId()
     var youtubeVideoId = (youtubeLink != "") ? youtubeId(youtubeLink) : null;
     //if (youtubeVideoId != null)
     editRoom(userMe.room.id, {screen: { videoid: youtubeVideoId }});
-    console.log(userMe.room, youtubeVideoId);
+    console.log(userMe.room.id, youtubeVideoId);
   } catch (err)
   {
     alert("Error: "+err+" Try to paste a well formed full YouTube URL. Thank you.");

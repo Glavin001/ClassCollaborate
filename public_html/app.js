@@ -61,13 +61,13 @@ io.sockets.on('connection', function(socket) {
     socket.username = newUser.id;
     // store the room name in the socket session for this client
     if (rooms.length > 0)
-      socket.room = rooms[0];
+      socket.room = rooms[0].id;
     // add the client's username to the global list
     users[socket.username] = newUser;
     // send client to current room
     socket.join(socket.room);
     // update the client side display of current room
-    socket.emit('update room', socket.room);
+    socket.emit('update room', getRoom(socket.room));
     // echo to client they've connected
     // socket.emit('update chat', "SERVER", 'you have connected to ' + socket.room.name);
     // echo to room 1 that a person has connected to their room
@@ -80,17 +80,17 @@ io.sockets.on('connection', function(socket) {
 
 // ====== Rooms
 
-  socket.on('add room', function(newroom) {
+  socket.on('add room', function(tempRoom) {
     var id = (rId);
     // Verify id is unique
     while ( getObjects(rooms, 'id', id).length > 0 )
       id++;
     rId = id; // Update the rId for later use.
-    newroom = { id: id, name: newroom.name, screen: { videoid: null }, chat: [], moderators: [ (socket.username).toString() ] };
-    rooms.push(newroom);
+    newRoom = { id: id, name: tempRoom.name, screen: { videoid: null }, chat: [], moderators: [ (socket.username).toString() ] };
+    rooms.push(newRoom);
     socket.broadcast.emit('update rooms list', rooms, undefined);
-    socket.emit('update rooms list', rooms, newroom);
-    socket.emit('update room', newroom);
+    socket.emit('update rooms list', rooms, newRoom);
+    socket.emit('update room', newRoom);
   });
 
 
@@ -125,13 +125,13 @@ io.sockets.on('connection', function(socket) {
           rooms[index].moderator.push(options.addModerator);
         }
         
-        socket.room = rooms[index];
-        socket.emit('update rooms list', rooms, socket.room); // Send update back to same socket user
+        socket.room = rooms[index].id;
+        socket.emit('update rooms list', rooms, getRoom(socket.room)); // Send update back to same socket user
         socket.broadcast.emit('update rooms list', rooms, undefined);
         if (forceRefresh)
         {
-          socket.emit('push refresh', {username: socket.username, room: socket.room});
-          socket.broadcast.emit('push refresh', {username: socket.username, room: socket.room});
+          socket.emit('push refresh', {username: socket.username, room: getRoom(socket.room) });
+          io.sockets.in( (socket.room).toString()).emit('push refresh', {username: socket.username, room: getRoom(socket.room)});
         }
       }
       else
@@ -162,20 +162,26 @@ io.sockets.on('connection', function(socket) {
   });
 
   // when the client emits 'send chat', this listens and executes
-  socket.on('send chat', function(data) {
-    console.log("send chat",data, socket.room);
-    // we tell the client to execute 'updatechat' with 2 parameters
-    io.sockets.in(socket.room).emit('update chat', users[socket.username].name, data, socket.room);
+  socket.on('send chat', function(msg) {
+    console.log("send chat",msg, socket.room, rooms);
     // Add message to room chat log
-    var roomIndex = getIndexFromId(rooms, socket.room);
-    if ( roomIndex >= 0 )
-      rooms[roomIndex].chat.push({username: socket.username, msg: data});
+    var roomIndex = getIndexFromId(rooms, parseInt(socket.room));
+    console.log("roomIndex:",roomIndex,"socket.room:",socket.room);
+    if (roomIndex >= 0)
+    {
+      rooms[roomIndex].chat.push({username: users[socket.username].name, msg: msg});
+      console.log(rooms[roomIndex]);
+      // we tell the client to execute 'update chat' with 2 parameters
+      //io.sockets.in(socket.room).emit('update chat', users[socket.username].name, data, rooms[roomIndex]);
+      io.sockets.in( (socket.room).toString() ).emit('update chat', users[socket.username].name, msg);
+      
+    }
    });
 
 
   // Custom Helper Functions
   function getRoom(roomId) {
-    return getObjects(rooms, 'id', roomId)[0];
+    return getObjects(rooms, 'id', parseInt(roomId))[0];
   }
 
   function getIndexFromId(array, id) {
