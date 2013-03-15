@@ -43,7 +43,8 @@ io.sockets.on('connection', function(socket) {
     // remove the username from global usernames list
     delete users[socket.id];
     // update list of users in chat, client-side
-    io.sockets.emit('update users', users);
+    console.log(users);
+    io.sockets.emit('update users', users);         // FIX ME, cannot pass users object.
     // echo globally that this client has left
     // socket.broadcast.emit('update chat', 'SERVER', socket.username + ' has disconnected');
     socket.leave(socket.room);
@@ -154,12 +155,25 @@ io.sockets.on('connection', function(socket) {
     //socket.emit('update chat', 'SERVER', 'You have connected to ' + newroom.name);
     // sent message to OLD room
     //socket.broadcast.to(socket.room).emit('update chat', 'SERVER', socket.username + ' has left this room');
-    // update socket session room title
+    // update socket session room
     socket.room = newroomid;
-    socket.emit('update room', getRoom(parseInt(socket.room)));
-    //socket.broadcast.to(newroom).emit('update chat', 'SERVER', socket.username + ' has joined this room');
-    socket.emit('update rooms list', rooms, newroom);
     // update the client side display of current room
+    socket.emit('update room', getRoom(parseInt(socket.room)));
+    
+    socket.broadcast.to(newroomid).emit('update chat', 'SERVER', users[socket.username].name + ' has joined this room');
+    rooms[roomIndex].chat.push({username: users[socket.username].name, msg: msg});
+    
+    var roomIndex = getIndexFromId(rooms, parseInt(socket.room));
+    console.log("roomIndex:",roomIndex,"socket.room:",socket.room);
+    if (roomIndex >= 0)
+    {
+      rooms[roomIndex].chat.push({username: users[socket.username].name, msg: msg});
+      console.log(rooms[roomIndex]);
+      io.sockets.in( (socket.room).toString() ).emit('update chat', users[socket.username].name, msg);
+    }
+    
+    socket.emit('update rooms list', rooms, newroom);
+    
   });
 
   // when the client emits 'send chat', this listens and executes

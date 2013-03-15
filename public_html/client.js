@@ -11,8 +11,30 @@ var userMe = {id: undefined, username: undefined, room: {}};
 socket.on('connect', function() {
   console.log("connect");
   // call the server-side function 'add user' and send one parameter (value of prompt)
-  userMe.id = socket.socket.sessionid; // FIX ME
-  userMe.username = prompt("What's your name?");
+  userMe.id = socket.socket.sessionid;
+  console.log("Update VideoId");
+  var continuing = true;
+  var username = "";
+  var errorMsg = "";
+  while (continuing)
+  {
+    continuing = false;
+    // var youtubeLink = $("#videoid").val();
+    var username = prompt("Please enter your name. "+errorMsg, "John Doe");
+    if (username !== null && username !== "")
+    {
+      // username is valid
+      continuing = false;
+    } else if (username === "") {
+      continuing = true;
+      errorMsg = "Cannot be blank.";
+    } else {
+      // Cancel
+      username = "Guest";
+      continuing = false;
+    }
+  }
+  userMe.username = username;
   socket.emit('add user', userMe.username);
 });
 
@@ -375,7 +397,7 @@ function resizePage() {
           + $('#moderators').height()
           + $('#modOptions').height();
 
-  if ($("#lightsLayer").css("display") == "none")
+  if ($("#lightsLayer").css("display") === "none")
   {
     // Lights are still on
     // Display normally
@@ -421,7 +443,8 @@ function resizePage() {
     // Maximize the screen and conversation box
     
     // Screen / Video Player
-    var sT = -1*roomHeaderHeight+$("#lightsLayer span").height();
+    var sT = -1*roomHeaderHeight 
+            + $("#lightsLayer span").height();
     var sW = cRW
             - parseInt(currRoom.css('padding-left'))
             - parseInt(currRoom.css('padding-right'));
@@ -444,7 +467,8 @@ function resizePage() {
      sW = sW - sPL - sPR;
      */
     // Conversation log box
-    var cBT = -1*roomHeaderHeight+$("#lightsLayer span").height();
+    var cBT = -1*roomHeaderHeight 
+            + $("#lightsLayer span").height();
     var cBH = cRH
             + 0
             - $('#chatMsg').height()
