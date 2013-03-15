@@ -491,7 +491,8 @@ function resizePage() {
             - $('#sendMsg').height()
             - parseInt(currRoom.css('padding-top'))
             - parseInt(currRoom.css('padding-bottom'))
-            - ((screen.css('display') != 'none') ? (sH) : ( $("#lightsLayer span").height() )
+            - $("#lightsLayer span").height()
+            - ((screen.css('display') != 'none') ? ( sH ) : ( 0 )
             );
 
   }
