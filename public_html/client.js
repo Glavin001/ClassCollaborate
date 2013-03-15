@@ -4,8 +4,8 @@
  */
 
 
-var socket = io.connect(undefined,{ 'port': 8080, 'connect timeout': 1000} );
-var userMe = { id: undefined, username: undefined, room: {} };
+var socket = io.connect(undefined, {'port': 8080, 'connect timeout': 1000});
+var userMe = {id: undefined, username: undefined, room: {}};
 
 // on connection to server, ask for user's name with an anonymous callback
 socket.on('connect', function() {
@@ -24,8 +24,8 @@ socket.on('update room', function(data) {
   // Update the room name
   $('#roomName').html(data.name);
   // Update the moderators list
-  $("#moderators").html("Moderator(s): "+data.moderators.join(", "));
-  if ( $.inArray(userMe.id, data.moderators) != -1)
+  $("#moderators").html("Moderator(s): " + data.moderators.join(", "));
+  if ($.inArray(userMe.id, data.moderators) != -1)
   {
     var roomName = $("#roomName");
     roomName.attr("contenteditable", "true");
@@ -35,9 +35,9 @@ socket.on('update room', function(data) {
       var newName = roomName.text();
       if (newName != "")
       {
-      //if (!$("#roomName").is(":focus")) {
+        //if (!$("#roomName").is(":focus")) {
         var roomId = userMe.room.id;
-        editRoom(roomId, { name: newName });
+        editRoom(roomId, {name: newName});
       }
     });
   }
@@ -48,24 +48,24 @@ socket.on('update room', function(data) {
     roomName.unbind('keyup');
   }
   // Clear last video container
-  $('#screen').html("").css("display","none");
+  $('#screen').html("").css("display", "none");
   // Check if there is a video connected to this class
   if (data.screen.videoid != null)
   {
-    console.log("Displaying video for room "+data.name);
+    console.log("Displaying video for room " + data.name);
     // Display class YouTube video!
-    $('#screen').css("display","block").append('<iframe id="player" type="text/html" src="http://www.youtube.com/embed/' + data.screen.videoid + '?enablejsapi=1&autoplay=1&autohide=2" frameborder="0" allowfullscreen>');
+    $('#screen').css("display", "block").append('<iframe id="player" type="text/html" src="http://www.youtube.com/embed/' + data.screen.videoid + '?enablejsapi=1&autoplay=1&autohide=2" frameborder="0" allowfullscreen>');
   }
   else
-    console.log("No video to display for room "+data.name);
+    console.log("No video to display for room " + data.name);
 
   $('#conversation').html(""); // Clear conversation
   // Fill in conversation
-  $.each( data.chat, function(key, convo) {
-    console.log("convo:",convo);
+  $.each(data.chat, function(key, convo) {
+    console.log("convo:", convo);
     $('#conversation').append('<li><strong>' + convo.username + '</strong>: ' + convo.msg + '</li>');
   });
-  
+
   resizePage();
   var convoBox = $('#conversation');
   convoBox.scrollTop(convoBox[0].scrollHeight);
@@ -76,9 +76,9 @@ socket.on('update room', function(data) {
 socket.on('update chat', function(username, msg) {
   console.log("update chat", username, msg);
   //if (userMe.room.id == room.id) {
-    var convoBox = $('#conversation');
-    convoBox.append('<li><strong>' + username + '</strong>: ' + msg + '</li>');
-    convoBox.scrollTop(convoBox[0].scrollHeight);
+  var convoBox = $('#conversation');
+  convoBox.append('<li><strong>' + username + '</strong>: ' + msg + '</li>');
+  convoBox.scrollTop(convoBox[0].scrollHeight);
   //} else {
   //   console.log("Not in the correct room.");
   //}
@@ -107,9 +107,9 @@ socket.on('update rooms list', function(rooms, current_room) {
 socket.on('push refresh', function(selector) {
   console.log("Push Refresh");
   if (
-          (selector.room.id != undefined && selector.room.id === userMe.room.id )  // In select room
-          || (selector.username != undefined && selector.room.id === userMe.username ) // Are select user
-  )
+          (selector.room.id != undefined && selector.room.id === userMe.room.id)  // In select room
+          || (selector.username != undefined && selector.room.id === userMe.username) // Are select user
+          )
   {
     // You have been selected to refresh.
     switchRoom(userMe.room.id); // Update room. // FIX ME
@@ -127,7 +127,7 @@ function addRoom() {
   //var youtubeVideoId = (youtubeLink != "")?youtubeId(youtubeLink):null;
   // socket.emit('add room', { name: roomName, videoid: youtubeVideoId } );
   if (roomName) // Check if roomName is valid
-    socket.emit('add room', { name: roomName } );
+    socket.emit('add room', {name: roomName});
 }
 
 function editRoom(roomid, options) {
@@ -144,26 +144,27 @@ function editRoom(roomid, options) {
  * @param String func     Desired function to call, eg. "playVideo"
  * @param Array  args     (optional) List of arguments to pass to function func*/
 function callPlayer(frame_id, func, args) {
-    if (window.jQuery && frame_id instanceof jQuery) frame_id = frame_id.get(0).id;
-    var iframe = document.getElementById(frame_id);
-    if (iframe && iframe.tagName.toUpperCase() != 'IFRAME') {
-        iframe = iframe.getElementsByTagName('iframe')[0];
-    }
-    if (iframe) {
-        // Frame exists, 
-        iframe.contentWindow.postMessage(JSON.stringify({
-            "event": "command",
-            "func": func,
-            "args": args || [],
-            "id": frame_id
-        }), "*");
-    }
+  if (window.jQuery && frame_id instanceof jQuery)
+    frame_id = frame_id.get(0).id;
+  var iframe = document.getElementById(frame_id);
+  if (iframe && iframe.tagName.toUpperCase() != 'IFRAME') {
+    iframe = iframe.getElementsByTagName('iframe')[0];
+  }
+  if (iframe) {
+    // Frame exists, 
+    iframe.contentWindow.postMessage(JSON.stringify({
+      "event": "command",
+      "func": func,
+      "args": args || [],
+      "id": frame_id
+    }), "*");
+  }
 }
 
 
 // Source: http://stackoverflow.com/a/3452617
 function youtubeId(url) {
-  if ( url.indexOf("?") !== -1 && url.indexOf("v=") !== -1 )
+  if (url.indexOf("?") !== -1 && url.indexOf("v=") !== -1)
   {
     var video_id = url.split('?')[1].split('v=')[1];
     var ampersandPosition = video_id.indexOf('&');
@@ -178,23 +179,26 @@ function youtubeId(url) {
 
 // Source: http://stackoverflow.com/a/37687
 function replaceURLWithHTMLLinks(text) {
-    var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-    return text.replace(exp,"<a href='$1' target='_blank'>$1</a>"); 
+  var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+  return text.replace(exp, "<a href='$1' target='_blank'>$1</a>");
 }
 
 function toggleLights(state)
 {
   var lightsLayer = $("#lightsLayer");
+  lightsLayer.stop();
   if (state === 0)
   {
     // Turn Lights Off
     //$('body').stop().animate({backgroundColor: "#000"}, 500);
     //$('#toggleLights').attr('onclick', "toggleLights(1);");
     lightsLayer.show();
-    lightsLayer.animate({ opacity: 1.0 },1000, function () {  });
-    lightsLayer.bind('click', function () { 
+    lightsLayer.animate({opacity: 1.0}, 1000, function() {
+      resizePage();
+    });
+    lightsLayer.bind('click', function() {
       toggleLights(1);
-    } );
+    });
     toggleRoomList(1);
   }
   else
@@ -202,10 +206,14 @@ function toggleLights(state)
     // Turn Lights On
     //$('body').stop().animate({backgroundColor: "#fff"}, 500);
     //$('#toggleLights').attr('onclick', "toggleLights(0);");
-    lightsLayer.animate({ opacity: 0.0 },500, function () { lightsLayer.hide(); });
+    lightsLayer.animate({opacity: 0.0}, 500, function() {
+      lightsLayer.hide();
+      resizePage();
+    });
     lightsLayer.unbind('click');
     toggleRoomList(0);
   }
+  resizePage();
 }
 
 function toggleRoomList(state)
@@ -218,7 +226,7 @@ function toggleRoomList(state)
     $("#toggleRoomList").unbind('click');
     $("#toggleRoomList").bind('click', function() {
       toggleRoomList(1);
-    });  
+    });
   }
   else
   {
@@ -285,12 +293,12 @@ $(function() {
       $('#chatMsg').focus();
     }
   });
-  
+
   $("#toggleRoomList").bind('click', function() {
-   toggleRoomList(1); 
+    toggleRoomList(1);
   });
-  
-  resizePage();   
+
+  resizePage();
 });
 
 
@@ -344,59 +352,110 @@ function resizePage() {
   // Dimensions
   // Window / Body
   var wWidth = $(window).width()
-          - parseInt( $("body").css('padding-left'))
-          - parseInt( $("body").css('padding-right'));
-  
-  var wHeight = $(window).height() 
-          - parseInt( $("body").css('padding-top'))
-          - parseInt( $("body").css('padding-bottom'));
+          - parseInt($("body").css('padding-left'))
+          - parseInt($("body").css('padding-right'));
+
+  var wHeight = $(window).height()
+          - parseInt($("body").css('padding-top'))
+          - parseInt($("body").css('padding-bottom'));
   // Room List
   var rLH = wHeight * 1.0;
   var rLW = wWidth * 0.2;
-  if ( roomList.hasClass("open") ) // Check if opened
-    rLW = (rLW > 200)?(200):(rLW < 120)?(120):rLW;
+  if (roomList.hasClass("open")) // Check if opened
+    rLW = (rLW > 200) ? (200) : (rLW < 120) ? (120) : rLW;
   else
     rLW = 1;
   // Current Room
   var cRH = wHeight;
-  var cRW = wWidth 
-          - rLW 
+  var cRW = wWidth
+          - rLW
           - toggleRoomList.width();
-  // Screen / Video Player
-  var sW = cRW
-          - parseInt( currRoom.css('padding-left'))
-          - parseInt( currRoom.css('padding-right'));
-  var sH = ( cRH
-          - $('#roomName').height() 
-          - $('#moderators').height() 
-          - $('#modOptions').height()           
-          - parseInt( currRoom.css('padding-top'))
-          - parseInt( currRoom.css('padding-bottom')) )
-          * 0.7;
-  var sPT = 0;
-  var sPR = 0;
-  var sPB = 0;
-  var sPL = 0;
-  /*
-  var sPT = sH * 0.023845;
-  var sPR = sW * 0.019029;
-  var sPB = sH * 0.268256338301;
-  var sPL = sW * 0.022835;
-  sH = sH - sPT - sPB;
-  sW = sW - sPL - sPR;
-  */
-  // Conversation log box
-  var cBH = cRH           
-          - $('#roomName').height() 
-          - $('#moderators').height() 
-          - $('#modOptions').height() 
-          - $('#chatMsg').height() 
-          - $('#sendMsg').height()
-          - parseInt( currRoom.css('padding-top'))
-          - parseInt( currRoom.css('padding-bottom'))
-          - ((screen.css('display') != 'none')?(sH):(0)
-          );
-  
+  var roomHeaderHeight = 0
+          + $('#roomName').height()
+          + $('#moderators').height()
+          + $('#modOptions').height();
+
+  if ($("#lightsLayer").css("display") == "none")
+  {
+    // Lights are still on
+    // Display normally
+
+    // Screen / Video Player
+    var sT = 0;
+    var sW = cRW
+            - parseInt(currRoom.css('padding-left'))
+            - parseInt(currRoom.css('padding-right'));
+    var sH = (cRH
+            - roomHeaderHeight
+            - parseInt(currRoom.css('padding-top'))
+            - parseInt(currRoom.css('padding-bottom')))
+            * 0.7;
+    var sPT = 0;
+    var sPR = 0;
+    var sPB = 0;
+    var sPL = 0;
+    /*
+     * // Used for positioning inside TV screen image.
+     var sPT = sH * 0.023845;
+     var sPR = sW * 0.019029;
+     var sPB = sH * 0.268256338301;
+     var sPL = sW * 0.022835;
+     sH = sH - sPT - sPB;
+     sW = sW - sPL - sPR;
+     */
+    // Conversation log box
+    var cBT = 0;
+    var cBH = cRH
+            - roomHeaderHeight
+            - $('#chatMsg').height()
+            - $('#sendMsg').height()
+            - parseInt(currRoom.css('padding-top'))
+            - parseInt(currRoom.css('padding-bottom'))
+            - ((screen.css('display') != 'none') ? (sH) : (0)
+            );
+
+  }
+  else
+  {
+    // Lights are off
+    // Maximize the screen and conversation box
+    
+    // Screen / Video Player
+    var sT = -1*roomHeaderHeight+$("#lightsLayer span").height();
+    var sW = cRW
+            - parseInt(currRoom.css('padding-left'))
+            - parseInt(currRoom.css('padding-right'));
+    var sH = (cRH
+            - 0
+            - parseInt(currRoom.css('padding-top'))
+            - parseInt(currRoom.css('padding-bottom')))
+            * 0.7;
+    var sPT = 0;
+    var sPR = 0;
+    var sPB = 0;
+    var sPL = 0;
+    /*
+     * // Used for positioning inside TV screen image.
+     var sPT = sH * 0.023845;
+     var sPR = sW * 0.019029;
+     var sPB = sH * 0.268256338301;
+     var sPL = sW * 0.022835;
+     sH = sH - sPT - sPB;
+     sW = sW - sPL - sPR;
+     */
+    // Conversation log box
+    var cBT = -1*roomHeaderHeight+$("#lightsLayer span").height();
+    var cBH = cRH
+            + 0
+            - $('#chatMsg').height()
+            - $('#sendMsg').height()
+            - parseInt(currRoom.css('padding-top'))
+            - parseInt(currRoom.css('padding-bottom'))
+            - ((screen.css('display') != 'none') ? (sH) : ( $("#lightsLayer span").height() )
+            );
+
+  }
+
   // Stop previous animations
   roomList.stop();
   toggleRoomList.stop();
@@ -404,45 +463,50 @@ function resizePage() {
   convoBox.stop();
   screen.stop();
   // Animate CSS changes/resizes
-  roomList.animate({ 
-    height: rLH, 
+  roomList.animate({
+    height: rLH,
     width: rLW
   }, 100);
-  toggleRoomList.animate({ 
-    height: rLH, 
+  toggleRoomList.animate({
+    height: rLH,
   }, 100);
-  currRoom.animate({ 
-    height: cRH, 
-    width: cRW 
+  currRoom.animate({
+    height: cRH,
+    width: cRW
   }, 100);
   convoBox.animate({
+    top: cBT,
     height: cBH,
     width: sW
   }, 100);
-  screen.animate({ 
-    height: sH, 
-    width: sW, 
-    paddingTop: sPT, 
-    paddingRight: sPR, 
-    paddingBottom: sPB, 
-    paddingLeft:  sPL
+  $("#chatMsg, #sendMsg").animate({
+    top: cBT
+  });
+  screen.animate({
+    top: sT,
+    height: sH,
+    width: sW,
+    paddingTop: sPT,
+    paddingRight: sPR,
+    paddingBottom: sPB,
+    paddingLeft: sPL
   }, 100);
-/*
-  screen.animate({ 
-    height: sH, 
-    width: sW, 
-    paddingTop: 0, 
-    paddingRight: 0, 
-    paddingBottom: 0, 
-    paddingLeft:  0
-  }, 100);
-  player.animate({ 
-    height: sH, 
-    width: sW, 
-    paddingTop: sPT, 
-    paddingRight: sPR, 
-    paddingBottom: sPB, 
-    paddingLeft:  sPL
-  }, 100);
-*/
+  /*
+   screen.animate({ 
+   height: sH, 
+   width: sW, 
+   paddingTop: 0, 
+   paddingRight: 0, 
+   paddingBottom: 0, 
+   paddingLeft:  0
+   }, 100);
+   player.animate({ 
+   height: sH, 
+   width: sW, 
+   paddingTop: sPT, 
+   paddingRight: sPR, 
+   paddingBottom: sPB, 
+   paddingLeft:  sPL
+   }, 100);
+   */
 }

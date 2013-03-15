@@ -9,6 +9,15 @@ Creation Date: March 12, 2013
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="stylesheet" type="text/css" href="main.css"/>
     <script src="common.js"></script>
+    
+    <!-- 
+    ie7-js  @  https://code.google.com/p/ie7-js/ 
+    A JavaScript library to make MSIE behave like a standards-compliant browser.
+    -->
+    <!--[if lt IE 9]>
+    <script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE9.js"></script>
+    <![endif]-->
+    
   </head>
   <body>
     
@@ -22,7 +31,11 @@ Creation Date: March 12, 2013
       google.load("jqueryui", "1.5.2");
     </script>
     
-    <div id="lightsLayer" style="display:none; opacity: 0.0;"></div>
+    <div id="lightsLayer" style="display:none; opacity: 0.0; text-align: center;">
+      <span style="color:white">Click here to turn on lights
+        <img alt="light bulb" src="http://iconbug.com/data/5c/128/b048a011428409b89defdc9e429200d7.png" height="16" width="16" />
+      </span>
+    </div>
     
     <div id="roomList" class="open" style="">
       <div class="title">Rooms</div>
@@ -37,10 +50,12 @@ Creation Date: March 12, 2013
       <div id="roomName" class="title">Current Room</div>
       <div id="moderators"></div>
       <div id="modOptions">
-        <button id="toggleLights" onclick="toggleLights(0);">Toggle Lights!</button>
+        <button id="toggleLights" onclick="toggleLights(0);">Turn the Lights Off!</button>
         <button id="changeVideo" onclick="updateVideoId();">Display YouTube Video!</button>
       </div>
-      <div id="screen"></div>
+      <div id="screen">
+        <iframe id="player" type="text/html" src="http://www.youtube.com/embed/?enablejsapi=1&amp;autoplay=1&amp;autohide=2" frameborder="0" allowfullscreen=""></iframe>
+      </div>
       <ul id="conversation"></ul>
       <input id="chatMsg" style="" />
       <input type="button" id="sendMsg" value="send" />
