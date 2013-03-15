@@ -160,18 +160,23 @@ function callPlayer(frame_id, func, args) {
     }
 }
 
-// Helper functions
-function youtubeId(url) {
 
-  var video_id = url.split('?')[1].split('v=')[1];
-  var ampersandPosition = video_id.indexOf('&');
-  if (ampersandPosition != -1) {
-    video_id = video_id.substring(0, ampersandPosition);
+// Source: http://stackoverflow.com/a/3452617
+function youtubeId(url) {
+  if ( url.indexOf("?") !== -1 && url.indexOf("v=") !== -1 )
+  {
+    var video_id = url.split('?')[1].split('v=')[1];
+    var ampersandPosition = video_id.indexOf('&');
+    if (ampersandPosition !== -1) {
+      video_id = video_id.substring(0, ampersandPosition);
+    }
+    return video_id;
   }
-  return video_id;
+  else
+    return undefined; // Not valid YouTube Link
 }
 
-// http://stackoverflow.com/a/37687
+// Source: http://stackoverflow.com/a/37687
 function replaceURLWithHTMLLinks(text) {
     var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
     return text.replace(exp,"<a href='$1' target='_blank'>$1</a>"); 
@@ -231,17 +236,32 @@ function toggleRoomList(state)
 function updateVideoId()
 {
   console.log("Update VideoId");
-  //var youtubeLink = prompt("YouTube URL. Leave blank for none.");
-  try {
-
-    var youtubeLink = $("#videoid").val();
-    var youtubeVideoId = (youtubeLink != "") ? youtubeId(youtubeLink) : null;
-    //if (youtubeVideoId != null)
-    editRoom(userMe.room.id, {screen: { videoid: youtubeVideoId }});
-    console.log(userMe.room.id, youtubeVideoId);
-  } catch (err)
+  var continuing = true;
+  var errorMsg = "";
+  while (continuing)
   {
-    alert("Error: "+err+" Try to paste a well formed full YouTube URL. Thank you.");
+    continuing = false;
+    // var youtubeLink = $("#videoid").val();
+    var youtubeLink = prompt("Enter the YouTube Link. Blank = Display No Video. " + errorMsg, "Example: http://www.youtube.com/watch?v=fES1tRiuqbU");
+    errorMsg = "";
+    if (youtubeLink !== null && youtubeLink !== "")
+    {
+      var youtubeVideoId = youtubeId(youtubeLink);
+      if (youtubeVideoId !== undefined) // Check if found valid YouTube Id
+      {
+        editRoom(userMe.room.id, {screen: {videoid: youtubeVideoId}});
+        continuing = false;
+      } else {
+        errorMsg = "Error: Invalid YouTube link. Please try again.";
+        continuing = true;
+      }
+    } else if (youtubeLink === "") {
+      editRoom(userMe.room.id, {screen: {videoid: null}});
+      continuing = false;
+    } else {
+      // Cancel
+      continuing = false;
+    }
   }
 }
 

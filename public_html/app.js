@@ -72,7 +72,7 @@ io.sockets.on('connection', function(socket) {
     // socket.emit('update chat', "SERVER", 'you have connected to ' + socket.room.name);
     // echo to room 1 that a person has connected to their room
     //socket.broadcast.to(socket.room).emit('update chat', 'SERVER', username + ' has connected to this room');
-    socket.emit('update rooms list', rooms, socket.room);
+    socket.emit('update rooms list', rooms, getRoom(socket.room));
     
     console.log(users);
     
@@ -109,18 +109,19 @@ io.sockets.on('connection', function(socket) {
     if (index >= 0)
     {
       console.log((socket.username).toString(), rooms[index]);
-      if ($.inArray( (socket.username).toString(), rooms[index].moderators) != -1)
+      if ($.inArray( (socket.username).toString(), rooms[index].moderators) !== -1)
       {
-        if (options.name != undefined)
+        console.log("User "+socket.username+" has permissions to this room.", options);
+        if (options.name !== undefined)
         {
           rooms[index].name = options.name;
         }
-        if (options.screen != undefined && options.screen.videoid != undefined)
+        if (options.screen !== undefined && options.screen.videoid !== undefined)
         {
           rooms[index].screen.videoid = options.screen.videoid;
           forceRefresh = true;
         }
-        if (options.addModerator != undefined)
+        if (options.addModerator !== undefined)
         {
           rooms[index].moderator.push(options.addModerator);
         }
