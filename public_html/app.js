@@ -119,10 +119,14 @@ io.sockets.on('connection', function(socket) {
         {
           var index = getIndexFromId(roomid);
           rooms.remove(index);
-          socket.emit('update rooms list', rooms, getRoom(0));         // Move to Lobby
-          socket.broadcast.emit('update rooms list', rooms, undefined); // Refresh
-          socket.broadcast.to(roomid).emit('update rooms list', rooms, getRoom(0)); // Move to Lobby
-          socket.broadcast.emit('push refresh', {username: socket.username, room: getRoom(0) });
+          
+          // Switch Rooms to Lobby
+          // Current User
+          socket.emit('update rooms list', rooms, getRoom(0));         
+          socket.emit('push refresh', {username: socket.username, room: {id: roomid} }, 0 ); // Move to Lobby
+          // All other Users
+          socket.broadcast.emit('update rooms list', rooms, undefined);
+          socket.broadcast.emit('push refresh', {username: socket.username, room: {id: roomid} }, 0 ); // Move to Lobby
 
         }
         else

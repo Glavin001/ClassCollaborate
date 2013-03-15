@@ -128,15 +128,18 @@ socket.on('update rooms list', function(rooms, current_room) {
 });
 
 // A forced refresh request from the server
-socket.on('push refresh', function(selector) {
-  console.log("Push Refresh");
+socket.on('push refresh', function(selector, newRoomid) {
+  console.log("Push Refresh",selector,newRoomid);
   if (
           (selector.room.id !== undefined && selector.room.id === userMe.room.id)  // In select room
-          || (selector.username !== undefined && selector.room.id === userMe.username) // Are select user
+          || (selector.username !== undefined && selector.username === userMe.id) // Are select user
           )
   {
     // You have been selected to refresh.
-    switchRoom(userMe.room.id); // Update room.
+    if (newRoomid !== undefined)
+      switchRoom(newRoomid); // Update room.
+    else
+      switchRoom(userMe.room.id); // Update room.
   }
 });
 
@@ -162,7 +165,7 @@ function removeRoom() {
     alert("You cannot remove the Lobby room.");
   
   // Go to Lobby
-  switchRoom(0); 
+  // switchRoom(0); // This is taken care of by the server-side
 }
 
 function editRoom(roomid, options) {
