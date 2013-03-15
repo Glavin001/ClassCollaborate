@@ -47,7 +47,9 @@ socket.on('update room', function(data) {
   $('#roomName').html(data.name);
   // Update the moderators list
   $("#moderators").html("Moderator(s): " + data.moderators.join(", "));
-  if ($.inArray(userMe.id, data.moderators) !== -1)
+  if (
+          userMe.room.moderators[0] === null // Lobby has null moderators and so anyone can edit.
+          || $.inArray(userMe.id, data.moderators) !== -1)
   {
     var roomName = $("#roomName");
     roomName.attr("contenteditable", "true");
@@ -109,7 +111,7 @@ socket.on('update chat', function(username, msg) {
 // listener, whenever the server emits 'updaterooms', this updates the room the client is in
 socket.on('update rooms list', function(rooms, current_room) {
   console.log('update rooms', rooms, current_room);
-  if (current_room === undefined)
+  if (current_room === undefined || current_room === null)
     current_room = userMe.room;
   else
     userMe.room = current_room; // Update userMe
@@ -129,8 +131,8 @@ socket.on('update rooms list', function(rooms, current_room) {
 socket.on('push refresh', function(selector) {
   console.log("Push Refresh");
   if (
-          (selector.room.id != undefined && selector.room.id === userMe.room.id)  // In select room
-          || (selector.username != undefined && selector.room.id === userMe.username) // Are select user
+          (selector.room.id !== undefined && selector.room.id === userMe.room.id)  // In select room
+          || (selector.username !== undefined && selector.room.id === userMe.username) // Are select user
           )
   {
     // You have been selected to refresh.
@@ -150,6 +152,17 @@ function addRoom() {
   // socket.emit('add room', { name: roomName, videoid: youtubeVideoId } );
   if (roomName) // Check if roomName is valid
     socket.emit('add room', {name: roomName});
+}
+
+function removeRoom() {
+  if (userMe.room.id !== 0) // Check if Lobby room 
+    socket.emit('remove room', userMe.room.id);
+  // User no longer belongs to a room.
+  else
+    alert("You cannot remove the Lobby room.");
+  
+  // Go to Lobby
+  switchRoom(0); 
 }
 
 function editRoom(roomid, options) {

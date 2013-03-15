@@ -25,9 +25,9 @@ var rId = 0; // Stores the room id that increments for every new room added.
 
 // rooms which are currently available in chat
 var rooms = [
-  {id: 0, name: 'Lobby', password: "", screen: { videoid: ""}, chat: [], moderators: [0]},
-  {id: 1, name: 'CSCI 4477 - Data Mining', password: "", screen: { videoid: 'fES1tRiuqbU'}, chat: [], moderators: [0]},
-  {id: 2, name: 'Test', password: "", screen: { videoid: null}, chat: [], moderators: [0]}
+  {id: 0, name: 'Lobby', password: "", screen: { videoid: ""}, chat: [], moderators: [ null ]} // Lobby is default landing zone.
+//  ,{id: 1, name: 'CSCI 4477 - Data Mining', password: "", screen: { videoid: 'fES1tRiuqbU'}, chat: [], moderators: [0]}
+//  ,{id: 2, name: 'Test', password: "", screen: { videoid: null}, chat: [], moderators: [0]}
 ];
 
 io.sockets.on('connection', function(socket) {
@@ -44,7 +44,7 @@ io.sockets.on('connection', function(socket) {
     delete users[socket.id];
     // update list of users in chat, client-side
     console.log("users:",users);
-    io.sockets.emit('update users', users);         // FIX ME, cannot pass users object.
+    //io.sockets.emit('update users', users);         // FIX ME, cannot pass users object.
     // echo globally that this client has left
     // socket.broadcast.emit('update chat', 'SERVER', socket.username + ' has disconnected');
     socket.leave(socket.room);
@@ -106,10 +106,39 @@ io.sockets.on('connection', function(socket) {
 
 
   socket.on('remove room', function(roomid) {
-    var index = getIndexFromId(roomid);
-    rooms.remove(index);
-    socket.emit('update rooms list', rooms, socket.room);
-    socket.broadcast.emit('update rooms list', rooms, undefined);
+    var index = getIndexFromId(rooms, roomid);
+    if (index >= 0)
+    {
+      if (
+              rooms[index].moderators[0] === null // Lobby has null moderators and so anyone can edit.
+              || $.inArray((socket.username).toString(), rooms[index].moderators) !== -1) // Check for other rooms
+      {
+        console.log("User " + socket.username + " has permissions to remove this room "+ rooms[index].name + ".");
+
+        if (roomid !== 0) // Check if Lobby
+        {
+          var index = getIndexFromId(roomid);
+          rooms.remove(index);
+          socket.emit('update rooms list', rooms, getRoom(0));         // Move to Lobby
+          socket.broadcast.emit('update rooms list', rooms, undefined); // Refresh
+          socket.broadcast.to(roomid).emit('update rooms list', rooms, getRoom(0)); // Move to Lobby
+          socket.broadcast.emit('push refresh', {username: socket.username, room: getRoom(0) });
+
+        }
+        else
+        {
+          // Cannot delete Lobby room.
+        }
+
+      }
+      else
+        console.log("User " + socket.username + " does not have permission to remove room " + rooms[index].name + ".");
+    }
+    else
+    {
+      console.log("Index out of bounds:", index);
+    }
+
   });
   
   socket.on('edit room', function(roomid, options) {
@@ -120,9 +149,11 @@ io.sockets.on('connection', function(socket) {
     if (index >= 0)
     {
       console.log((socket.username).toString(), rooms[index]);
-      if ($.inArray( (socket.username).toString(), rooms[index].moderators) !== -1)
+      if (
+              rooms[index].moderators[0] === null // Lobby has null moderators and so anyone can edit.
+              || $.inArray( (socket.username).toString(), rooms[index].moderators) !== -1 ) // Check for other rooms
       {
-        console.log("User "+socket.username+" has permissions to this room.", options);
+        console.log("User "+socket.username+" has permissions to edit this room.", options);
         if (options.name !== undefined)
         {
           rooms[index].name = options.name;
